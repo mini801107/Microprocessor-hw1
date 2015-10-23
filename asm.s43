@@ -1,0 +1,225 @@
+#include "msp430.h"                     ; #define controlled include file
+
+        NAME    main                    ; module name
+
+        PUBLIC  main                    ; make the main label vissible
+                                        ; outside this module
+        ORG     0FFFEh
+        DC16    init                    ; set reset vector to 'init' label
+
+        RSEG    CSTACK                  ; pre-declaration of segment
+        RSEG    CODE                    ; place program in 'CODE' segment
+
+init:   MOV     #SFE(CSTACK), SP        ; set up stack
+
+main:   NOP                             ; main program
+        MOV.W   #WDTPW+WDTHOLD,&WDTCTL  ; Stop watchdog timer
+        mov.b   #00001101b , P1DIR
+        mov.b   #10000000b , P4DIR
+        mov.b   #00000001b , P2REN
+        
+        mov.b   #00000000b , P1OUT
+        mov.b   #00000000b , P4OUT
+
+;===============°»´ú«öÁä===============
+
+        
+;===============«G¬õºñLED 5¬í===============
+        bis.b   #00001101b , P1OUT
+        bis.b   #10000000b , P4OUT
+        
+        mov #512, R15
+        jmp delay_5_a
+        
+close:
+        and.b   #11110010b , P1OUT
+        and.b   #01111111b , P4OUT
+
+        ; 6 = 1ªø4µu
+        bis.b   #00001001b , P1OUT
+        mov #256, R15
+        jmp red_2_a
+s0:
+        and.b   #11110110b , P1OUT
+        mov #4, R5
+s1:
+        cmp #0, R5
+        jz close2
+        mov #256, R15
+        jmp delay_06_a
+s2:
+        bis.b   #10000000b , P4OUT
+        bis.b   #00000100b , P1OUT
+        mov #256, R15
+        jmp green_1_a     
+s3:    
+        and.b   #01111111b , P4OUT
+        and.b   #11111011b , P1OUT
+        dec R5
+        jmp s1
+
+close2:
+        mov #512, R15
+        jmp delay_5_c
+        
+        ; 2 = 2µu3ªø
+s4:
+        mov #2, R5
+s5:     
+        cmp #0, R5
+        jz s7
+        bis.b   #10000000b , P4OUT
+        bis.b   #00000100b , P1OUT
+        mov #256, R15
+        jmp green_1_c
+s6:        
+        and.b   #01111111b , P4OUT
+        and.b   #11111011b , P1OUT
+        dec R5
+        mov #256, R15
+        jmp delay_06_c   
+s7:
+        mov #3, R5
+s8:        
+        bis.b   #00001001b , P1OUT
+        mov #256, R15
+        jmp red_2_c
+s9:
+        and.b   #11110110b , P1OUT
+        dec R5
+        cmp #0, R5
+        jz s10
+        mov #256, R15
+        jmp delay_06_e
+ 
+        
+;=============©µ¿ð 5 ¬í================      
+delay_5_a:
+        mov #2558, R14   ;2 cycle
+
+delay_5_b:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz delay_5_b    ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz delay_5_a    ;2 cycle
+        jmp close
+      
+;=============¬õ¿O 2 ¬í================
+red_2_a:
+        mov #2046, R14   ;2 cycle
+
+red_2_b:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz red_2_b      ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz red_2_a      ;2 cycle
+        jmp s0
+                
+;=============ºñ¿O 1 ¬í================
+green_1_a:
+        mov #1022, R14   ;2 cycle
+
+green_1_b:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz green_1_b    ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz green_1_a    ;2 cycle
+        jmp s3
+
+;=============°±¹y 0.6 ¬í================
+delay_06_a:
+        mov #612, R14    ;2 cycle
+
+delay_06_b:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz delay_06_b   ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz delay_06_a   ;2 cycle
+        jmp s2
+ 
+;=============©µ¿ð 5 ¬í================      
+delay_5_c:
+        mov #2558, R14   ;2 cycle
+
+delay_5_d:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz delay_5_d    ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz delay_5_c    ;2 cycle
+        jmp s4
+        
+;=============ºñ¿O 1 ¬í================
+green_1_c:
+        mov #1022, R14   ;2 cycle
+
+green_1_d:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz green_1_d    ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz green_1_c    ;2 cycle
+        jmp s6
+        
+;=============°±¹y 0.6 ¬í================
+delay_06_c:
+        mov #612, R14    ;2 cycle
+
+delay_06_d:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz delay_06_d   ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz delay_06_c   ;2 cycle
+        jmp s5
+        
+;=============¬õ¿O 2 ¬í================
+red_2_c:
+        mov #2046, R14   ;2 cycle
+
+red_2_d:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz red_2_d      ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz red_2_c      ;2 cycle
+        jmp s9
+ 
+ ;=============°±¹y 0.6 ¬í================
+delay_06_e:
+        mov #612, R14    ;2 cycle
+
+delay_06_f:
+        dec R14          ;1 cycle
+        cmp #0, R14      ;1 cycle
+        jnz delay_06_f   ;2 cycle
+
+        dec R15          ;1 cycle
+        cmp #0, R15      ;1 cycle
+        jnz delay_06_e   ;2 cycle
+        jmp s8
+        
+;=======================================
+s10:  
+
+        END
